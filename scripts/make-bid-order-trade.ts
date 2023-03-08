@@ -1,9 +1,9 @@
 import { BigNumber } from "ethers";
-import { ethers, getNamedAccounts, deployments } from "hardhat";
+import { ethers, deployments } from "hardhat";
 import { createMakerOrder, createTakerOrder } from "./helper/order-helper";
 
 async function main() {
-  const { execute, get, read } = deployments;
+  const { get, read } = deployments;
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const holderKey = process.env.HOLDER_PRIVATE_KEY!;
