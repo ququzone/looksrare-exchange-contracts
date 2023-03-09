@@ -26,7 +26,7 @@ const deployFunction: DeployFunction = async () => {
       currencyManager.address,
       executionManager.address,
       royaltyFeeManager.address,
-      "0xff5fae9fe685b90841275e32c348dc4426190db0", // WETH
+      "0xa00744882684c3e4747faefd68d283ea44099d03", // WETH
       deployer, // protocolFeeRecipient
     ],
   });
