@@ -13,10 +13,10 @@ async function main() {
   const exchange = await get("LooksRareExchange");
   const transferSelector = await read("LooksRareExchange", "transferSelectorNFT");
 
-  const weth = "0xff5fae9fe685b90841275e32c348dc4426190db0";
-  const collection = "0x8F477E965e0855351cf9A7CEa4E1c274225D42A1";
+  const weth = "0xa00744882684c3e4747faefd68d283ea44099d03";
+  const collection = "0x58fB17cA8Baa563Cd1978d75eE9D3F6aaC721Fdb";
   const tokenId = BigNumber.from(0);
-  const price = ethers.utils.parseEther("1");
+  const price = ethers.utils.parseEther("0.001");
 
   console.log(`fetch collection ${collection} transfer manager`);
   const transferManagerFactory = await ethers.getContractFactory("TransferSelectorNFT");
@@ -25,15 +25,21 @@ async function main() {
     .checkTransferManagerForToken(collection);
   console.log(`collection ${collection} transfer manager is ${transferManager}`);
 
-  console.log(`approve token ${tokenId} to TransferManager`);
   const token = await ethers.getContractAt("IERC721", collection);
-  await token.connect(wallet).approve(transferManager, tokenId);
+  const approved = await token.getApproved(tokenId);
+  if (approved !== transferManager) {
+    console.log(`approve token ${tokenId} to TransferManager`);
+    const tx = await token.connect(wallet).approve(transferManager, tokenId);
+    await tx.wait();
+  }
 
   console.log(`prepare ask order params`);
   const { chainId } = await ethers.provider.getNetwork();
   const now = new Date();
   const startTime = Math.floor(now.getTime() / 1000);
   const endTime = startTime + 86400; // one day
+
+  const nonce = await read("LooksRareExchange", "userMinOrderNonce", wallet.address);
 
   const makerAskOrder = await createMakerOrder({
     isOrderAsk: true,
@@ -44,7 +50,7 @@ async function main() {
     amount: BigNumber.from(1),
     strategy: strategy.address,
     currency: weth,
-    nonce: BigNumber.from(0), // nonce
+    nonce: nonce.add(1), // nonce
     startTime: BigNumber.from(startTime),
     endTime: BigNumber.from(endTime),
     minPercentageToAsk: BigNumber.from(9800),
