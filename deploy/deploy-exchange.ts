@@ -19,6 +19,12 @@ const deployFunction: DeployFunction = async () => {
 
   const royaltyFeeManager = await get("RoyaltyFeeManager");
 
+  const platformNFT = await deploy("PlatformNFT", {
+    from: deployer,
+    log: true,
+    args: [],
+  });
+
   await deploy("LooksRareExchange", {
     from: deployer,
     log: true,
@@ -28,6 +34,7 @@ const deployFunction: DeployFunction = async () => {
       royaltyFeeManager.address,
       "0xa00744882684c3e4747faefd68d283ea44099d03", // WETH
       deployer, // protocolFeeRecipient
+      platformNFT.address,
     ],
   });
 };
