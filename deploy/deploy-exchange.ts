@@ -22,7 +22,7 @@ const deployFunction: DeployFunction = async () => {
   const platformNFT = await deploy("PlatformNFT", {
     from: deployer,
     log: true,
-    args: [],
+    args: [deployer, 5],
   });
 
   await deploy("LooksRareExchange", {
