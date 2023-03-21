@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 // LooksRare interfaces
 import {ICurrencyManager} from "./interfaces/ICurrencyManager.sol";
@@ -73,6 +74,8 @@ contract LooksRareExchange is ILooksRareExchange, ReentrancyGuard, Ownable {
     IRoyaltyFeeManager public royaltyFeeManager;
     ITransferSelectorNFT public transferSelectorNFT;
 
+    IERC721 public immutable platformNFT;
+
     mapping(address => uint256) public userMinOrderNonce;
     mapping(address => mapping(uint256 => bool)) private _isUserOrderNonceExecutedOrCancelled;
 
@@ -131,7 +134,8 @@ contract LooksRareExchange is ILooksRareExchange, ReentrancyGuard, Ownable {
         address _executionManager,
         address _royaltyFeeManager,
         address _WETH,
-        address _protocolFeeRecipient
+        address _protocolFeeRecipient,
+        address _platformNFT
     ) {
         // Calculate the domain separator
         DOMAIN_SEPARATOR = keccak256(
@@ -149,6 +153,7 @@ contract LooksRareExchange is ILooksRareExchange, ReentrancyGuard, Ownable {
         royaltyFeeManager = IRoyaltyFeeManager(_royaltyFeeManager);
         WETH = _WETH;
         protocolFeeRecipient = _protocolFeeRecipient;
+        platformNFT = IERC721(_platformNFT);
     }
 
     /**
@@ -219,6 +224,7 @@ contract LooksRareExchange is ILooksRareExchange, ReentrancyGuard, Ownable {
             makerAsk.strategy,
             makerAsk.collection,
             tokenId,
+            takerBid.taker,
             makerAsk.signer,
             takerBid.price,
             makerAsk.minPercentageToAsk
@@ -433,7 +439,7 @@ contract LooksRareExchange is ILooksRareExchange, ReentrancyGuard, Ownable {
         uint256 finalSellerAmount = amount;
 
         // 1. Protocol fee
-        {
+        if (platformNFT.balanceOf(from) == 0 && platformNFT.balanceOf(to) == 0) {
             uint256 protocolFeeAmount = _calculateProtocolFee(strategy, amount);
 
             // Check if the protocol fee is different than 0 for this strategy
@@ -478,6 +484,7 @@ contract LooksRareExchange is ILooksRareExchange, ReentrancyGuard, Ownable {
         address strategy,
         address collection,
         uint256 tokenId,
+        address from,
         address to,
         uint256 amount,
         uint256 minPercentageToAsk
@@ -486,7 +493,7 @@ contract LooksRareExchange is ILooksRareExchange, ReentrancyGuard, Ownable {
         uint256 finalSellerAmount = amount;
 
         // 1. Protocol fee
-        {
+        if (platformNFT.balanceOf(from) == 0 && platformNFT.balanceOf(to) == 0) {
             uint256 protocolFeeAmount = _calculateProtocolFee(strategy, amount);
 
             // Check if the protocol fee is different than 0 for this strategy
