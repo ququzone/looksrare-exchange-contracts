@@ -1,5 +1,5 @@
 import { DeployFunction } from "hardhat-deploy/types";
-import { getNamedAccounts, deployments } from "hardhat";
+import { ethers, getNamedAccounts, deployments } from "hardhat";
 
 const deployFunction: DeployFunction = async () => {
   const { deploy, get } = deployments;
@@ -10,20 +10,21 @@ const deployFunction: DeployFunction = async () => {
     from: deployer,
     log: true,
   });
+  // const cm = await ethers.getContract("CurrencyManager");
+  // let tx = await cm.addCurrency("0xa00744882684c3e4747faefd68d283ea44099d03"); // WETH
+  // await tx.wait();
 
+  const strategy = await ethers.getContract("StrategyStandardSaleForFixedPriceV1B");
   // deploy ExecutionManager
   const executionManager = await deploy("ExecutionManager", {
     from: deployer,
     log: true,
   });
+  const em = await ethers.getContract("ExecutionManager");
+  const tx = await em.addStrategy(strategy.address);
+  await tx.wait();
 
   const royaltyFeeManager = await get("RoyaltyFeeManager");
-
-  const platformNFT = await deploy("PlatformNFT", {
-    from: deployer,
-    log: true,
-    args: [deployer, 5],
-  });
 
   await deploy("LooksRareExchange", {
     from: deployer,
@@ -34,11 +35,10 @@ const deployFunction: DeployFunction = async () => {
       royaltyFeeManager.address,
       "0xa00744882684c3e4747faefd68d283ea44099d03", // WETH
       deployer, // protocolFeeRecipient
-      platformNFT.address,
     ],
   });
 };
 
 export default deployFunction;
 deployFunction.tags = [`all`, `exchange`, `main`];
-deployFunction.dependencies = [`royalty`];
+deployFunction.dependencies = [`royalty`, `strategy`];

@@ -65,7 +65,7 @@ contract StrategyAnyItemFromCollectionForFixedPriceV1B is Ownable, IExecutionStr
      * @param newProtocolFee protocol fee
      */
     function setProtocolFee(uint256 newProtocolFee) external onlyOwner {
-        require(newProtocolFee < _protocolFee, "Owner: Protocol fee too high");
+        require(newProtocolFee < 5000, "Owner: Protocol fee too high");
         _protocolFee = newProtocolFee;
 
         emit NewProtocolFee(newProtocolFee);

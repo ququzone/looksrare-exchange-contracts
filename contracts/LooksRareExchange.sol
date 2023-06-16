@@ -24,39 +24,6 @@ import {SignatureChecker} from "./libraries/SignatureChecker.sol";
 /**
  * @title LooksRareExchange
  * @notice It is the core contract of the LooksRare exchange.
-LOOKSRARELOOKSRARELOOKSRLOOKSRARELOOKSRARELOOKSRARELOOKSRARELOOKSRLOOKSRARELOOKSRARELOOKSR
-LOOKSRARELOOKSRARELOOKSRAR'''''''''''''''''''''''''''''''''''OOKSRLOOKSRARELOOKSRARELOOKSR
-LOOKSRARELOOKSRARELOOKS:.                                        .;OOKSRARELOOKSRARELOOKSR
-LOOKSRARELOOKSRARELOO,.                                            .,KSRARELOOKSRARELOOKSR
-LOOKSRARELOOKSRAREL'                ..',;:LOOKS::;,'..                'RARELOOKSRARELOOKSR
-LOOKSRARELOOKSRAR.              .,:LOOKSRARELOOKSRARELO:,.              .RELOOKSRARELOOKSR
-LOOKSRARELOOKS:.             .;RARELOOKSRARELOOKSRARELOOKSl;.             .:OOKSRARELOOKSR
-LOOKSRARELOO;.            .'OKSRARELOOKSRARELOOKSRARELOOKSRARE'.            .;KSRARELOOKSR
-LOOKSRAREL,.            .,LOOKSRARELOOK:;;:"""":;;;lELOOKSRARELO,.            .,RARELOOKSR
-LOOKSRAR.             .;okLOOKSRAREx:.              .;OOKSRARELOOK;.             .RELOOKSR
-LOOKS:.             .:dOOOLOOKSRARE'      .''''..     .OKSRARELOOKSR:.             .LOOKSR
-LOx;.             .cKSRARELOOKSRAR'     'LOOKSRAR'     .KSRARELOOKSRARc..            .OKSR
-L;.             .cxOKSRARELOOKSRAR.    .LOOKS.RARE'     ;kRARELOOKSRARExc.             .;R
-LO'             .;oOKSRARELOOKSRAl.    .LOOKS.RARE.     :kRARELOOKSRAREo;.             'SR
-LOOK;.            .,KSRARELOOKSRAx,     .;LOOKSR;.     .oSRARELOOKSRAo,.            .;OKSR
-LOOKSk:.            .'RARELOOKSRARd;.      ....       'oOOOOOOOOOOxc'.            .:LOOKSR
-LOOKSRARc.             .:dLOOKSRAREko;.            .,lxOOOOOOOOOd:.             .ARELOOKSR
-LOOKSRARELo'             .;oOKSRARELOOxoc;,....,;:ldkOOOOOOOOkd;.             'SRARELOOKSR
-LOOKSRARELOOd,.            .,lSRARELOOKSRARELOOKSRARELOOKSRkl,.            .,OKSRARELOOKSR
-LOOKSRARELOOKSx;.            ..;oxELOOKSRARELOOKSRARELOkxl:..            .:LOOKSRARELOOKSR
-LOOKSRARELOOKSRARc.              .':cOKSRARELOOKSRALOc;'.              .ARELOOKSRARELOOKSR
-LOOKSRARELOOKSRARELl'                 ...'',,,,''...                 'SRARELOOKSRARELOOKSR
-LOOKSRARELOOKSRARELOOo,.                                          .,OKSRARELOOKSRARELOOKSR
-LOOKSRARELOOKSRARELOOKSx;.                                      .;xOOKSRARELOOKSRARELOOKSR
-LOOKSRARELOOKSRARELOOKSRLO:.                                  .:SRLOOKSRARELOOKSRARELOOKSR
-LOOKSRARELOOKSRARELOOKSRLOOKl.                              .lOKSRLOOKSRARELOOKSRARELOOKSR
-LOOKSRARELOOKSRARELOOKSRLOOKSRo'.                        .'oLOOKSRLOOKSRARELOOKSRARELOOKSR
-LOOKSRARELOOKSRARELOOKSRLOOKSRARd;.                    .;xRELOOKSRLOOKSRARELOOKSRARELOOKSR
-LOOKSRARELOOKSRARELOOKSRLOOKSRARELO:.                .:kRARELOOKSRLOOKSRARELOOKSRARELOOKSR
-LOOKSRARELOOKSRARELOOKSRLOOKSRARELOOKl.            .cOKSRARELOOKSRLOOKSRARELOOKSRARELOOKSR
-LOOKSRARELOOKSRARELOOKSRLOOKSRARELOOKSRo'        'oLOOKSRARELOOKSRLOOKSRARELOOKSRARELOOKSR
-LOOKSRARELOOKSRARELOOKSRLOOKSRARELOOKSRARE,.  .,dRELOOKSRARELOOKSRLOOKSRARELOOKSRARELOOKSR
-LOOKSRARELOOKSRARELOOKSRLOOKSRARELOOKSRARELOOKSRARELOOKSRARELOOKSRLOOKSRARELOOKSRARELOOKSR
  */
 contract LooksRareExchange is ILooksRareExchange, ReentrancyGuard, Ownable {
     using SafeERC20 for IERC20;
@@ -74,7 +41,7 @@ contract LooksRareExchange is ILooksRareExchange, ReentrancyGuard, Ownable {
     IRoyaltyFeeManager public royaltyFeeManager;
     ITransferSelectorNFT public transferSelectorNFT;
 
-    IERC721 public immutable platformNFT;
+    IERC721 public platformNFT;
 
     mapping(address => uint256) public userMinOrderNonce;
     mapping(address => mapping(uint256 => bool)) private _isUserOrderNonceExecutedOrCancelled;
@@ -86,6 +53,7 @@ contract LooksRareExchange is ILooksRareExchange, ReentrancyGuard, Ownable {
     event NewProtocolFeeRecipient(address indexed protocolFeeRecipient);
     event NewRoyaltyFeeManager(address indexed royaltyFeeManager);
     event NewTransferSelectorNFT(address indexed transferSelectorNFT);
+    event NewPlatformNFT(address indexed platformNFT);
 
     event RoyaltyPayment(
         address indexed collection,
@@ -134,8 +102,7 @@ contract LooksRareExchange is ILooksRareExchange, ReentrancyGuard, Ownable {
         address _executionManager,
         address _royaltyFeeManager,
         address _WETH,
-        address _protocolFeeRecipient,
-        address _platformNFT
+        address _protocolFeeRecipient
     ) {
         // Calculate the domain separator
         DOMAIN_SEPARATOR = keccak256(
@@ -153,7 +120,6 @@ contract LooksRareExchange is ILooksRareExchange, ReentrancyGuard, Ownable {
         royaltyFeeManager = IRoyaltyFeeManager(_royaltyFeeManager);
         WETH = _WETH;
         protocolFeeRecipient = _protocolFeeRecipient;
-        platformNFT = IERC721(_platformNFT);
     }
 
     /**
@@ -385,6 +351,15 @@ contract LooksRareExchange is ILooksRareExchange, ReentrancyGuard, Ownable {
     }
 
     /**
+     * @notice Update platform nft
+     * @param _platformNFT new nft for platform nft
+     */
+    function updatePlatformNFT(address _platformNFT) external onlyOwner {
+        platformNFT = IERC721(_platformNFT);
+        emit NewPlatformNFT(_platformNFT);
+    }
+
+    /**
      * @notice Update royalty fee manager
      * @param _royaltyFeeManager new fee manager address
      */
@@ -439,7 +414,8 @@ contract LooksRareExchange is ILooksRareExchange, ReentrancyGuard, Ownable {
         uint256 finalSellerAmount = amount;
 
         // 1. Protocol fee
-        if (platformNFT.balanceOf(from) == 0 && platformNFT.balanceOf(to) == 0) {
+        if (address(platformNFT) == address(0) 
+                || (platformNFT.balanceOf(from) == 0 && platformNFT.balanceOf(to) == 0)) {
             uint256 protocolFeeAmount = _calculateProtocolFee(strategy, amount);
 
             // Check if the protocol fee is different than 0 for this strategy
@@ -493,7 +469,8 @@ contract LooksRareExchange is ILooksRareExchange, ReentrancyGuard, Ownable {
         uint256 finalSellerAmount = amount;
 
         // 1. Protocol fee
-        if (platformNFT.balanceOf(from) == 0 && platformNFT.balanceOf(to) == 0) {
+        if (address(platformNFT) == address(0) 
+                || (platformNFT.balanceOf(from) == 0 && platformNFT.balanceOf(to) == 0)) {
             uint256 protocolFeeAmount = _calculateProtocolFee(strategy, amount);
 
             // Check if the protocol fee is different than 0 for this strategy
