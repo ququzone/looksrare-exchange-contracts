@@ -82,3 +82,9 @@ npx solhint 'contracts/**/*.sol' --fix
 - Create a [Personal access token](https://github.com/settings/tokens/new?scopes=repo&description=release-it) (Don't change the default scope)
 - Create an `.env` (copy `.env.template`) and set your GitHub personal access token.
 - `yarn release` will run all the checks, build, and publish the package, and publish the GitHub release note.
+
+## Post deploy
+
+1. Add strategy to Execution Manager
+2. Add WETH to Currency Manager
+3. Add TransferSelector to Exchange
