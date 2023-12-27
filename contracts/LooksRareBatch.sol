@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import {IERC721Receiver} from "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import {IERC1155Receiver} from "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 
 import {ILooksRareExchange} from "./interfaces/ILooksRareExchange.sol";
 import {OrderTypes} from "./libraries/OrderTypes.sol";
@@ -33,7 +35,7 @@ abstract contract TokenTransferrer {
  * @notice This contract allows NFT sweepers to batch buy NFTs from LooksRare
  *         by passing high-level structs + low-level bytes as calldata.
  */
-contract LooksRareBatch is TokenTransferrer {
+contract LooksRareBatch is TokenTransferrer, IERC721Receiver, IERC1155Receiver {
     /**
      * @param makerAskPrice Maker ask price, which is not necessarily equal to the
      *                      taker bid price
@@ -68,7 +70,7 @@ contract LooksRareBatch is TokenTransferrer {
     function execute(
         BasicOrder[] calldata orders,
         bytes[] calldata ordersExtraData,
-        bytes memory, /* extraData */
+        bytes memory /* extraData */,
         address recipient,
         bool isAtomic
     ) external payable {
@@ -147,5 +149,40 @@ contract LooksRareBatch is TokenTransferrer {
                 );
             } catch {}
         }
+    }
+
+    function onERC721Received(
+        address,
+        address,
+        uint256,
+        bytes calldata
+    ) external pure override returns (bytes4) {
+        return IERC721Receiver.onERC721Received.selector;
+    }
+
+    function supportsInterface(bytes4 interfaceId) external pure override returns (bool) {
+        return
+            interfaceId == type(IERC721Receiver).interfaceId ||
+            interfaceId == type(IERC1155Receiver).interfaceId;
+    }
+
+    function onERC1155Received(
+        address,
+        address,
+        uint256,
+        uint256,
+        bytes calldata
+    ) external pure override returns (bytes4) {
+        return IERC1155Receiver.onERC1155Received.selector;
+    }
+
+    function onERC1155BatchReceived(
+        address,
+        address,
+        uint256[] calldata,
+        uint256[] calldata,
+        bytes calldata
+    ) external pure override returns (bytes4) {
+        return IERC1155Receiver.onERC1155BatchReceived.selector;
     }
 }
