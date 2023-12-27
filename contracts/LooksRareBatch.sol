@@ -10,7 +10,7 @@ import {CollectionType} from "./libraries/OrderEnums.sol";
 import {BasicOrder} from "./libraries/OrderStructs.sol";
 import {IProxy} from "./interfaces/IProxy.sol";
 import {InvalidOrderLength} from "./libraries/SharedErrors.sol";
-import {SignatureChecker} from "./libraries/SignatureChecker.sol";
+import {SignatureCheckerCalldata} from "./libraries/SignatureCheckerCalldata.sol";
 
 abstract contract TokenTransferrer {
     function _transferTokenToRecipient(
@@ -97,7 +97,7 @@ contract LooksRareBatch is TokenTransferrer {
                 makerAsk.startTime = order.startTime;
                 makerAsk.endTime = order.endTime;
 
-                (bytes32 r, bytes32 s, uint8 v) = SignatureChecker.splitSignature(order.signature);
+                (bytes32 r, bytes32 s, uint8 v) = SignatureCheckerCalldata.splitSignature(order.signature);
                 makerAsk.v = v;
                 makerAsk.r = r;
                 makerAsk.s = s;
